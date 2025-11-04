@@ -1,0 +1,7 @@
+{
+  "name": "Gas Station Rating Analyzer",
+  "description": "An application that uses AI to find and analyze reviews for gas stations in Sofia, Bulgaria. It visualizes review sentiment with pie charts and displays overall ratings.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
