@@ -1,13 +1,13 @@
 import React from 'react';
-import { GasStation } from '../types';
+import { useData } from '../data/dataService';
 
 interface SidebarProps {
-  stations: GasStation[];
   currentRoute: string;
   currentStationId?: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ stations, currentRoute, currentStationId }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentRoute, currentStationId }) => {
+  const { gasStations: stations } = useData();
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();

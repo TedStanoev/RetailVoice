@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { gasStations, reviews } from '../data/mockData';
+import { useData } from '../data/dataService';
 
 declare const L: any; // Use Leaflet from the global scope
 
 const MapHomePage: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any | null>(null);
+  const { gasStations, reviews } = useData();
 
   // Define custom SVG icons for different colors
   const createIcon = (color: string) => {
@@ -89,7 +90,7 @@ const MapHomePage: React.FC = () => {
         mapRef.current = null;
       }
     };
-  }, []);
+  }, [gasStations, reviews]);
 
   return (
     <div className="h-full w-full">

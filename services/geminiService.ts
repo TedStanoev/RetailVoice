@@ -12,7 +12,6 @@ export const analyzeReviews = async (reviews: string[]): Promise<ReviewAnalysis>
     const reviewsString = JSON.stringify(reviews);
     const prompt = `
       You are a review analyst. Analyze the following ${reviews.length} user reviews for a gas station.
-      Categorize each review as 'positive', 'neutral', or 'negative'. Provide the total count for each category.
       In one or two sentences, summarize the most common good things (praise) mentioned.
       In one or two sentences, summarize the most common bad things (issues) mentioned.
       Reviews:
@@ -28,19 +27,10 @@ export const analyzeReviews = async (reviews: string[]): Promise<ReviewAnalysis>
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            categories: {
-              type: Type.OBJECT,
-              properties: {
-                positive: { type: Type.INTEGER, description: "Total count of positive reviews." },
-                neutral: { type: Type.INTEGER, description: "Total count of neutral reviews." },
-                negative: { type: Type.INTEGER, description: "Total count of negative reviews." },
-              },
-               required: ["positive", "neutral", "negative"],
-            },
             summaryGood: { type: Type.STRING, description: "A one or two sentence summary of common positive feedback." },
             summaryBad: { type: Type.STRING, description: "A one or two sentence summary of common negative feedback." },
           },
-          required: ["categories", "summaryGood", "summaryBad"],
+          required: ["summaryGood", "summaryBad"],
         },
       },
     });

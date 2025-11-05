@@ -19,11 +19,6 @@ export interface Review {
 }
 
 export interface ReviewAnalysis {
-  categories: {
-    positive: number;
-    neutral: number;
-    negative: number;
-  };
   summaryGood: string;
   summaryBad: string;
 }

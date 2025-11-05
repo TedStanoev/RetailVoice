@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { getStationById, getReviewsByStationId } from '../data/mockData';
+import { useData } from '../data/dataService';
 import { analyzeReviews } from '../services/geminiService';
 import { GasStation, ReviewAnalysis, RatingsHistoryDataPoint, Review } from '../types';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -27,48 +27,70 @@ const StarRating: React.FC<{ rating: number, className?: string }> = ({ rating, 
 
 const GasStationDetailsPage: React.FC<GasStationDetailsPageProps> = ({ stationId }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [stationDetails, setStationDetails] = useState<GasStation | null | undefined>(null);
   const [reviewAnalysis, setReviewAnalysis] = useState<ReviewAnalysis | null>(null);
   const [ratingsHistory, setRatingsHistory] = useState<RatingsHistoryDataPoint[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [allStationReviews, setAllStationReviews] = useState<Review[]>([]);
   const [sortOrder, setSortOrder] = useState<string>('date-desc');
 
+  const { gasStations, reviews } = useData();
+
+  const stationDetails = useMemo(() => 
+    gasStations.find(s => s.id === stationId),
+    [gasStations, stationId]
+  );
+  
+  const allStationReviews = useMemo(() => 
+    reviews.filter(r => r.stationId === stationId),
+    [reviews, stationId]
+  );
+
+  const sentimentCounts = useMemo(() => {
+    return allStationReviews.reduce(
+      (acc, review) => {
+        if (review.rating > 3) {
+          acc.positive++;
+        } else if (review.rating < 3) {
+          acc.negative++;
+        } else {
+          acc.neutral++;
+        }
+        return acc;
+      },
+      { positive: 0, neutral: 0, negative: 0 }
+    );
+  }, [allStationReviews]);
+
   useEffect(() => {
-    const fetchData = async () => {
+    const processData = async () => {
+      if (!stationDetails) {
+        return;
+      }
+
       setIsLoading(true);
       setError(null);
       try {
-        const station = getStationById(stationId);
-        setStationDetails(station);
+        const sortedForChart = [...allStationReviews].sort((a, b) => a.timestamp - b.timestamp);
+        let ratingSum = 0;
+        const history = sortedForChart.map((review, index) => {
+            ratingSum += review.rating;
+            const currentAverage = ratingSum / (index + 1);
+            return {
+                date: new Date(review.timestamp).toLocaleDateString(),
+                rating: parseFloat(currentAverage.toFixed(2))
+            };
+        });
+        setRatingsHistory(history);
 
-        if (station) {
-          const allReviews = getReviewsByStationId(stationId);
-          setAllStationReviews(allReviews);
+        const latestReviewTexts = [...allStationReviews]
+          .sort((a, b) => b.timestamp - a.timestamp)
+          .slice(0, 15)
+          .map(r => r.reviewText);
 
-          // For Chart - calculate running average
-          const sortedForChart = [...allReviews].sort((a, b) => a.timestamp - b.timestamp);
-          let ratingSum = 0;
-          const history = sortedForChart.map((review, index) => {
-              ratingSum += review.rating;
-              const currentAverage = ratingSum / (index + 1);
-              return {
-                  date: new Date(review.timestamp).toLocaleDateString(),
-                  rating: parseFloat(currentAverage.toFixed(2))
-              };
-          });
-          setRatingsHistory(history);
-
-          // For Gemini Analysis
-          const latestReviewTexts = [...allReviews]
-            .sort((a, b) => b.timestamp - a.timestamp)
-            .slice(0, 15)
-            .map(r => r.reviewText);
-
-          if (latestReviewTexts.length > 0) {
-            const analysis = await analyzeReviews(latestReviewTexts);
-            setReviewAnalysis(analysis);
-          }
+        if (latestReviewTexts.length > 0) {
+          const analysis = await analyzeReviews(latestReviewTexts);
+          setReviewAnalysis(analysis);
+        } else {
+          setReviewAnalysis(null);
         }
       } catch (e: unknown) {
         if (e instanceof Error) {
@@ -80,8 +102,8 @@ const GasStationDetailsPage: React.FC<GasStationDetailsPageProps> = ({ stationId
         setIsLoading(false);
       }
     };
-    fetchData();
-  }, [stationId]);
+    processData();
+  }, [stationDetails, allStationReviews]);
 
   const sortedReviews = useMemo(() => {
     const sorted = [...allStationReviews];
@@ -98,13 +120,17 @@ const GasStationDetailsPage: React.FC<GasStationDetailsPageProps> = ({ stationId
     }
   }, [allStationReviews, sortOrder]);
   
-  const pieData = reviewAnalysis ? [
-    { name: 'Positive', value: reviewAnalysis.categories.positive },
-    { name: 'Neutral', value: reviewAnalysis.categories.neutral },
-    { name: 'Negative', value: reviewAnalysis.categories.negative },
-  ].filter(item => item.value > 0) : [];
-
-  const COLORS = ['#34d399', '#fbbf24', '#f87171'];
+  const pieData = useMemo(() => [
+    { name: 'Positive', value: sentimentCounts.positive },
+    { name: 'Neutral', value: sentimentCounts.neutral },
+    { name: 'Negative', value: sentimentCounts.negative },
+  ].filter(item => item.value > 0), [sentimentCounts]);
+  
+  const SENTIMENT_COLORS: { [key: string]: string } = {
+    'Positive': '#34d399', // emerald-400
+    'Neutral': '#fbbf24',  // amber-400
+    'Negative': '#f87171', // red-400
+  };
   
   const RADIAN = Math.PI / 180;
   const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
@@ -120,9 +146,9 @@ const GasStationDetailsPage: React.FC<GasStationDetailsPageProps> = ({ stationId
     );
   };
 
+  if (!stationDetails) return <ErrorDisplay error="Gas station not found." />;
   if (isLoading) return <LoadingSpinner />;
   if (error) return <ErrorDisplay error={error} />;
-  if (!stationDetails) return <ErrorDisplay error="Gas station not found." />;
 
   const tooltipStyle = {
     backgroundColor: '#E5E7EB', // slate-200
@@ -141,14 +167,14 @@ const GasStationDetailsPage: React.FC<GasStationDetailsPageProps> = ({ stationId
         {/* Review Summary Column */}
         <div>
           <h3 className="text-xl font-semibold mb-4 text-slate-200">Review Summary</h3>
-          {reviewAnalysis ? (
+          {allStationReviews.length > 0 ? (
             <div className="space-y-4 bg-slate-900/60 p-6 rounded-lg">
               <div>
                 <h4 className="font-bold text-lg text-slate-300">Sentiment Breakdown</h4>
                 <div className="flex space-x-4 mt-2 text-center">
-                    <div className="flex-1"><span className="text-2xl font-bold text-emerald-400">{reviewAnalysis.categories.positive}</span><p className="text-sm text-slate-400">Positive</p></div>
-                    <div className="flex-1"><span className="text-2xl font-bold text-amber-400">{reviewAnalysis.categories.neutral}</span><p className="text-sm text-slate-400">Neutral</p></div>
-                    <div className="flex-1"><span className="text-2xl font-bold text-red-400">{reviewAnalysis.categories.negative}</span><p className="text-sm text-slate-400">Negative</p></div>
+                    <div className="flex-1"><span className="text-2xl font-bold text-emerald-400">{sentimentCounts.positive}</span><p className="text-sm text-slate-400">Positive</p></div>
+                    <div className="flex-1"><span className="text-2xl font-bold text-amber-400">{sentimentCounts.neutral}</span><p className="text-sm text-slate-400">Neutral</p></div>
+                    <div className="flex-1"><span className="text-2xl font-bold text-red-400">{sentimentCounts.negative}</span><p className="text-sm text-slate-400">Negative</p></div>
                 </div>
                  {pieData.length > 0 && (
                   <div className="h-64 w-full mt-4">
@@ -166,9 +192,7 @@ const GasStationDetailsPage: React.FC<GasStationDetailsPageProps> = ({ stationId
                           nameKey="name"
                         >
                           {pieData.map((entry, index) => (
-                            <>
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            </>
+                            <Cell key={`cell-${index}`} fill={SENTIMENT_COLORS[entry.name]} />
                           ))}
                         </Pie>
                         <Tooltip contentStyle={tooltipStyle} />
@@ -177,14 +201,18 @@ const GasStationDetailsPage: React.FC<GasStationDetailsPageProps> = ({ stationId
                   </div>
                  )}
               </div>
-              <div>
-                <h4 className="font-bold text-lg text-slate-300 mt-6">Common Praise</h4>
-                <p className="text-slate-400 italic mt-2">"{reviewAnalysis.summaryGood}"</p>
-              </div>
-              <div>
-                <h4 className="font-bold text-lg text-slate-300 mt-6">Common Issues</h4>
-                <p className="text-slate-400 italic mt-2">"{reviewAnalysis.summaryBad}"</p>
-              </div>
+              {reviewAnalysis && (
+                <>
+                  <div>
+                    <h4 className="font-bold text-lg text-slate-300 mt-6">Common Praise</h4>
+                    <p className="text-slate-400 italic mt-2">"{reviewAnalysis.summaryGood}"</p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg text-slate-300 mt-6">Common Issues</h4>
+                    <p className="text-slate-400 italic mt-2">"{reviewAnalysis.summaryBad}"</p>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
              <div className="flex items-center justify-center h-full text-slate-500 bg-slate-900/60 p-6 rounded-lg">

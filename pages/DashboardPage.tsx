@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { gasStations, reviews, getReviewsByStationId } from '../data/mockData';
+import { useData } from '../data/dataService';
 import { summarizeStationHighlights } from '../services/geminiService';
 import { GasStation } from '../types';
 import ErrorDisplay from '../components/ErrorDisplay';
@@ -80,6 +80,8 @@ const HighlightCard: React.FC<HighlightCardProps> = ({ station, avgRating, title
 };
 
 const DashboardPage: React.FC = () => {
+    const { gasStations, reviews } = useData();
+
   const stats = useMemo(() => {
     const totalStations = gasStations.length;
     const totalReviews = reviews.length;
@@ -106,7 +108,7 @@ const DashboardPage: React.FC = () => {
       overallAvgRating,
       reviewDistribution,
     };
-  }, []);
+  }, [gasStations, reviews]);
 
   const [highlightedStations, setHighlightedStations] = useState<{
     highest: { station: GasStation; avgRating: number; summary: string[] | null } | null;
@@ -125,7 +127,7 @@ const DashboardPage: React.FC = () => {
       const avgRating = stationReviews.reduce((sum, r) => sum + r.rating, 0) / stationReviews.length;
       return { station, avgRating };
     }).filter(item => item.avgRating !== -1); // Filter out stations with no reviews
-  }, []);
+  }, [gasStations, reviews]);
 
   useEffect(() => {
     if (stationRatings.length === 0) {
@@ -142,8 +144,8 @@ const DashboardPage: React.FC = () => {
         setIsLoadingSummaries(true);
         setSummaryError(null);
 
-        const highestReviews = getReviewsByStationId(highestRated.station.id).map(r => r.reviewText);
-        const lowestReviews = getReviewsByStationId(lowestRated.station.id).map(r => r.reviewText);
+        const highestReviews = reviews.filter(r => r.stationId === highestRated.station.id).map(r => r.reviewText);
+        const lowestReviews = reviews.filter(r => r.stationId === lowestRated.station.id).map(r => r.reviewText);
 
         const [highestSummary, lowestSummary] = await Promise.all([
           summarizeStationHighlights(highestReviews, 'positive'),
@@ -167,7 +169,7 @@ const DashboardPage: React.FC = () => {
     };
 
     fetchSummaries();
-  }, [stationRatings]);
+  }, [stationRatings, reviews]);
 
   const tooltipStyle = {
     backgroundColor: '#E5E7EB', // slate-200
