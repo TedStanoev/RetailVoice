@@ -101,7 +101,7 @@ const App: React.FC = () => {
           {route === 'map' && (
             <header className="text-center p-6 border-b border-slate-700/50 bg-slate-900/30 backdrop-blur-sm flex-shrink-0">
                <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">
-                 RetailVoice.AI
+                 SentimentPulse
                </h2>
                <p className="mt-2 text-md text-slate-400 max-w-2xl mx-auto">
                  An AI-powered tool to analyze client feedback, using Google Maps reviews and ratings

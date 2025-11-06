@@ -1,6 +1,6 @@
 import { GasStation, Review } from '../types';
 
-const SPREADSHEET_ID = '130Kmw8zDvEvs_0ikiNnGwme11iPY-bYaQWJCocgNoWg';
+const SPREADSHEET_ID = '1_wRa7UMdM7pSOTo9AbI2Ky71U_Kg8zGBWTpNVSLP6as';
 const GAS_STATIONS_SHEET_NAME = 'gasStations';
 const REVIEWS_SHEET_NAME = 'reviews';
 
@@ -27,7 +27,7 @@ function parseJsonTextToData(text: string) {
             throw new Error("Invalid Gviz response structure.");
         }
 
-        const headers = table.cols.map(col => col.label).filter(label => label);
+        const headers = table.cols.map(col => col.label.trimEnd()).filter(label => label);
         
         const result = table.rows
             .map(row => {
@@ -91,6 +91,8 @@ export const fetchReviews = async (): Promise<Review[]> => {
     const text = await response.text();
     const jsonData = parseJsonTextToData(text);
 
+    console.log('jsonData', jsonData)
+
     if (!jsonData) {
         throw new Error('Failed to parse review data from Google Sheet.');
     }
@@ -100,7 +102,7 @@ export const fetchReviews = async (): Promise<Review[]> => {
         stationId: item.stationId,
         rating: parseInt(item.rating, 10) || 0,
         reviewText: item.reviewText,
-        timestamp: parseInt(item.timestamp, 10) || Date.now(),
+        timestamp: new Date(item.timestamp) || new Date(),
     }));
 };
 

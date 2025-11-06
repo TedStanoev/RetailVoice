@@ -4,6 +4,7 @@ import { useData } from '../data/dataService';
 import { summarizeStationHighlights } from '../services/geminiService';
 import { GasStation } from '../types';
 import ErrorDisplay from '../components/ErrorDisplay';
+import StarRating from '../components/StarRating';
 
 const StatCard: React.FC<{ title: string; value: string | number; description: string }> = ({ title, value, description }) => (
   <div className="bg-slate-800/50 backdrop-blur-sm border border-purple-500/20 rounded-xl p-6 shadow-lg">
@@ -12,21 +13,6 @@ const StatCard: React.FC<{ title: string; value: string | number; description: s
     <p className="mt-1 text-sm text-slate-500">{description}</p>
   </div>
 );
-
-const StarRating: React.FC<{ rating: number, className?: string }> = ({ rating, className = '' }) => {
-  return (
-    <div className={`flex items-center ${className}`}>
-      {[...Array(5)].map((_, index) => {
-        const starClass = index < Math.round(rating) ? 'text-amber-400' : 'text-slate-600';
-        return (
-          <svg key={index} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`w-5 h-5 ${starClass}`}>
-            <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.007z" clipRule="evenodd" />
-          </svg>
-        );
-      })}
-    </div>
-  );
-};
 
 interface HighlightCardProps {
   station: GasStation;
@@ -62,17 +48,18 @@ const HighlightCard: React.FC<HighlightCardProps> = ({ station, avgRating, title
         </div>
       </div>
       <div className="mt-4 flex-grow min-h-[6rem]">
-        {isLoading && (
+        {isLoading ? (
            <div className="flex items-center justify-center h-full">
                 <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-purple-400"></div>
            </div>
-        )}
-        {summaryPoints && (
-          <ul className="space-y-2 list-disc list-inside text-slate-300">
-            {summaryPoints.map((point, index) => (
-              <li key={index}>{point}</li>
-            ))}
-          </ul>
+        ) : (
+          summaryPoints && (
+            <ul className="space-y-2 list-disc list-inside text-slate-300">
+              {summaryPoints.map((point, index) => (
+                <li key={index}>{point}</li>
+              ))}
+            </ul>
+          )
         )}
       </div>
     </div>
@@ -152,6 +139,8 @@ const DashboardPage: React.FC = () => {
           summarizeStationHighlights(lowestReviews, 'negative')
         ]);
 
+        console.log(highestSummary, lowestSummary);
+
         setHighlightedStations({
           highest: { ...highestRated, summary: highestSummary },
           lowest: { ...lowestRated, summary: lowestSummary }
@@ -224,7 +213,7 @@ const DashboardPage: React.FC = () => {
             />
           ) : (
             <div className="bg-slate-800/50 p-6 rounded-xl flex items-center justify-center text-slate-500 min-h-[14rem]">
-              {isLoadingSummaries ? 'Loading...' : 'Not enough data.'}
+              {isLoadingSummaries ? <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-400"></div> : 'Not enough data.'}
             </div>
           )}
 
@@ -240,7 +229,7 @@ const DashboardPage: React.FC = () => {
             />
           ) : (
             <div className="bg-slate-800/50 p-6 rounded-xl flex items-center justify-center text-slate-500 min-h-[14rem]">
-              {isLoadingSummaries ? 'Loading...' : 'Not enough data.'}
+              {isLoadingSummaries ? <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-400"></div> : 'Not enough data.'}
             </div>
           )}
         </div>

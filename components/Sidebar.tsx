@@ -37,7 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentRoute, currentStationId }) => 
           onClick={handleNavClick}
           className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-80 transition-opacity"
         >
-          RetailVoice.AI
+          SentimentPulse
         </a>
       </div>
       <nav className="flex-1 overflow-y-auto">
