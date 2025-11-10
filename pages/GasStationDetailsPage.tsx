@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useData } from '../data/dataService';
 import { analyzeReviews } from '../services/geminiService';
-import { ReviewAnalysis, RatingsHistoryDataPoint } from '../types';
+import { ReviewAnalysis, RatingsHistoryDataPoint, CategorySentiment, CategorySentimentData } from '../types';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorDisplay from '../components/ErrorDisplay';
 import StarRating from '../components/StarRating';
@@ -10,6 +10,29 @@ import StarRating from '../components/StarRating';
 interface GasStationDetailsPageProps {
   stationId: string;
 }
+
+const CategoryRating: React.FC<{ label: string; data: CategorySentimentData }> = ({ label, data }) => {
+  const { sentiment, count } = data;
+  const sentimentStyles: { [key in CategorySentiment]: string } = {
+    Positive: 'text-emerald-400',
+    Negative: 'text-red-400',
+    Mixed: 'text-amber-400',
+    Neutral: 'text-slate-500',
+  };
+
+  const sentimentColor = sentimentStyles[sentiment] || 'text-slate-500';
+
+  return (
+    <div className="flex flex-col items-center justify-center bg-slate-800/50 p-4 rounded-lg text-center h-full shadow-inner">
+      <p className={`text-xl font-bold uppercase tracking-wider ${sentimentColor}`}>{sentiment}</p>
+      <span className="font-medium text-slate-300 mt-2">{label}</span>
+      {sentiment !== 'Neutral' && count > 0 && (
+          <span className="text-xs text-slate-500 mt-1">({count} reviews)</span>
+      )}
+    </div>
+  );
+};
+
 
 const GasStationDetailsPage: React.FC<GasStationDetailsPageProps> = ({ stationId }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -161,11 +184,11 @@ const GasStationDetailsPage: React.FC<GasStationDetailsPageProps> = ({ stationId
   return (
     <div className="bg-slate-800/30 backdrop-blur-sm border border-purple-500/20 rounded-xl p-6 shadow-lg">
       <div className="mb-6">
-        <a href="#/" onClick={handleNavClick} className="inline-flex items-center gap-2 text-slate-300 hover:text-purple-400 transition-colors text-sm">
+        <a href="#/map" onClick={handleNavClick} className="inline-flex items-center gap-2 text-slate-300 hover:text-purple-400 transition-colors text-sm">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-            <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
+            <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 A 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
           </svg>
-          Back to Dashboard
+          Back to Overview
         </a>
       </div>
       
@@ -240,6 +263,38 @@ const GasStationDetailsPage: React.FC<GasStationDetailsPageProps> = ({ stationId
             </div>
           )}
         </div>
+
+        {/* Category Ratings Section */}
+        {reviewAnalysis?.categoryRatings && (
+          <div>
+            <h3 className="text-xl font-semibold mb-4 text-slate-200">Client feedback by Category</h3>
+            <div className="bg-slate-900/60 p-6 rounded-lg">
+                <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-5 gap-4">
+                    {/* Items 1-3: Span 2/6 cols on md, 1/5 on lg */}
+                    <div className="md:col-span-2 lg:col-span-1">
+                        <CategoryRating label="Hygiene" data={reviewAnalysis.categoryRatings.hygiene} />
+                    </div>
+                    <div className="md:col-span-2 lg:col-span-1">
+                        <CategoryRating label="Food & Drinks" data={reviewAnalysis.categoryRatings.foodAndDrinks} />
+                    </div>
+                    <div className="md:col-span-2 lg:col-span-1">
+                        <CategoryRating label="Gas Quality" data={reviewAnalysis.categoryRatings.gasQuality} />
+                    </div>
+                    
+                    {/* Item 4: Start at col 2 on md to center the second row of two items */}
+                    <div className="md:col-start-2 md:col-span-2 lg:col-start-auto lg:col-span-1">
+                        <CategoryRating label="Cashier Service" data={reviewAnalysis.categoryRatings.cashierService} />
+                    </div>
+                    
+                    {/* Item 5: Spans full width on sm if it's the last odd item, otherwise behaves normally */}
+                    <div className="md:col-span-2 lg:col-span-1">
+                        <CategoryRating label="Gas Refill Service" data={reviewAnalysis.categoryRatings.gasRefillService} />
+                    </div>
+                </div>
+            </div>
+          </div>
+        )}
+
         {/* Ratings History Section */}
         <div>
           <h3 className="text-xl font-semibold mb-4 text-slate-200">Ratings History (Overall Trend)</h3>

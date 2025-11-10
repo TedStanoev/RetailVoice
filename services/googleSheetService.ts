@@ -60,7 +60,7 @@ function parseJsonTextToData(text: string) {
 
 
 export const fetchGasStations = async (): Promise<GasStation[]> => {
-  const response = await fetch(GAS_STATIONS_URL);
+  const response = await fetch(`${GAS_STATIONS_URL}&_=${new Date().getTime()}`);
   if (!response.ok) throw new Error('Failed to fetch gas station data from Google Sheet.');
   const text = await response.text();
   const jsonData = parseJsonTextToData(text);
@@ -86,7 +86,7 @@ export const fetchGasStations = async (): Promise<GasStation[]> => {
 };
 
 export const fetchReviews = async (): Promise<Review[]> => {
-    const response = await fetch(REVIEWS_URL);
+    const response = await fetch(`${REVIEWS_URL}&_=${new Date().getTime()}`);
     if (!response.ok) throw new Error('Failed to fetch review data from Google Sheet.');
     const text = await response.text();
     const jsonData = parseJsonTextToData(text);
@@ -107,7 +107,7 @@ export const fetchReviews = async (): Promise<Review[]> => {
 };
 
 export const fetchCellValue = async (sheetUrl: string, range: string) => {
-    const url = `${sheetUrl}&tq=select%20*&range=${range}`;
+    const url = `${sheetUrl}&tq=select%20*&range=${range}&_=${new Date().getTime()}`;
 
     try {
         const response = await fetch(url);

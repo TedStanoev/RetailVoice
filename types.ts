@@ -18,9 +18,23 @@ export interface Review {
   timestamp: number; // Unix timestamp
 }
 
+export type CategorySentiment = 'Positive' | 'Negative' | 'Mixed' | 'Neutral';
+
+export interface CategorySentimentData {
+  sentiment: CategorySentiment;
+  count: number;
+}
+
 export interface ReviewAnalysis {
   summaryGood: string;
   summaryBad: string;
+  categoryRatings?: {
+    hygiene: CategorySentimentData;
+    foodAndDrinks: CategorySentimentData;
+    gasQuality: CategorySentimentData;
+    cashierService: CategorySentimentData;
+    gasRefillService: CategorySentimentData;
+  };
 }
 
 export interface RatingsHistoryDataPoint {
