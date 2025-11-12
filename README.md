@@ -13,8 +13,11 @@
 ## :framed_picture: Screenshots
 
 <img width="1917" height="966" alt="image" src="https://github.com/user-attachments/assets/2f604530-4941-4838-bdd3-68421701a08d" />
-<img width="1917" height="964" alt="image" src="https://github.com/user-attachments/assets/bfab55cf-7b04-4b6c-be23-36e104f59f54" />
+<img width="1918" height="965" alt="image" src="https://github.com/user-attachments/assets/3271157c-7ad1-4873-84e9-e555338d1a1e" />
 <img width="1906" height="956" alt="image" src="https://github.com/user-attachments/assets/ee9b5690-64de-4756-9656-78e0acc73922" />
+<img width="1919" height="960" alt="image" src="https://github.com/user-attachments/assets/a5df3803-5763-459c-a538-8b13320791d8" />
+
+
 
 
 ## :computer: Run Locally
