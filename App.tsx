@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import MapHomePage from './pages/MapHomePage';
 import GasStationDetailsPage from './pages/GasStationDetailsPage';
 import DashboardPage from './pages/DashboardPage';
+import SubmitReviewPage from './pages/SubmitReviewPage';
 import Sidebar from './components/Sidebar';
 import { initializeData, DataContext } from './data/dataService';
 import ErrorDisplay from './components/ErrorDisplay';
@@ -62,12 +63,15 @@ const App: React.FC = () => {
   const parts = hash.replace('#/', '').split('/');
   const route = parts[0] || 'home';
   const param = parts[1];
+  const isSubmitReviewPage = route === 'submit-review';
   
   let page;
   if (route === 'station' && param) {
     page = <GasStationDetailsPage stationId={param} />;
   } else if (route === 'map') {
     page = <MapHomePage />;
+  } else if (route === 'submit-review') {
+    page = <SubmitReviewPage />;
   } else {
     page = <DashboardPage />;
   }
@@ -94,7 +98,7 @@ const App: React.FC = () => {
   return (
     <DataContext.Provider value={{ gasStations, reviews }}>
       <div className="flex h-screen bg-slate-900 text-slate-100 font-sans">
-        <Sidebar currentRoute={route} currentStationId={param} />
+        {!isSubmitReviewPage && <Sidebar currentRoute={route} currentStationId={param} />}
 
         <div className="flex-1 flex flex-col overflow-hidden relative z-10">
           
@@ -109,13 +113,15 @@ const App: React.FC = () => {
              </header>
           )}
 
-          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-900/30 p-4 sm:p-6 lg:p-8">
+          <main className={`flex-1 overflow-x-hidden overflow-y-auto ${!isSubmitReviewPage ? 'bg-slate-900/30 p-4 sm:p-6 lg:p-8' : ''}`}>
             {page}
           </main>
           
-          <footer className="text-center p-4 text-slate-500 text-sm bg-transparent border-t border-slate-800">
-              <p>Powered by Gemini API and React</p>
-          </footer>
+          {!isSubmitReviewPage && (
+            <footer className="text-center p-4 text-slate-500 text-sm bg-transparent border-t border-slate-800">
+                <p>Powered by Gemini API and React</p>
+            </footer>
+          )}
         </div>
       </div>
     </DataContext.Provider>
