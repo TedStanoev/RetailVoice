@@ -1,6 +1,6 @@
 # <a href="https://gas-station-rating-analyzer-804516230951.us-west1.run.app/#/">SentimentPulse</a>
 
-<p>This is my project submission for an AI solution competition organized by UNWE</p>
+<p>This is my MVP project submission for an AI solution competition organized by UNWE</p>
 
 ## Summary
 
