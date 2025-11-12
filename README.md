@@ -1,14 +1,23 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# <a href="https://gas-station-rating-analyzer-804516230951.us-west1.run.app/#/">SentimentPulse</a>
 
-# Run and deploy your AI Studio app
+<p>This is my project submission for an AI solution competition organized by UNWE</p>
 
-This contains everything you need to run your app locally.
+## Summary
 
-View your app in AI Studio: https://ai.studio/apps/drive/1tJsFkIWQn_9qgbWfoTLpOfND1Hb6Y1ZF
+<p>SentimentPulse is a web app developed with Google AI Studio, that utilizes low-code/no-code instruments with Google Gemini AI to summarize raw reviews data scraped from Google Maps. The analyzed data is then displayed in a structured manner with graphs and pie charts.</p>
 
-## Run Locally
+## :rocket: Goal
+
+<p>It is designed to be used by business owners or organizations with many shops available on google maps. They can easily get a quick summary and a clear visualization of the shops' rating statistics and customer feedback.</p>
+
+## :framed_picture: Screenshots
+
+<img width="1917" height="966" alt="image" src="https://github.com/user-attachments/assets/2f604530-4941-4838-bdd3-68421701a08d" />
+<img width="1917" height="964" alt="image" src="https://github.com/user-attachments/assets/bfab55cf-7b04-4b6c-be23-36e104f59f54" />
+<img width="1906" height="956" alt="image" src="https://github.com/user-attachments/assets/ee9b5690-64de-4756-9656-78e0acc73922" />
+
+
+## :computer: Run Locally
 
 **Prerequisites:**  Node.js
 
